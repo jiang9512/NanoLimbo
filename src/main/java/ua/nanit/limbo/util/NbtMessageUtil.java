@@ -12,9 +12,30 @@ import java.util.Map;
 public class NbtMessageUtil {
 
     public static NbtMessage create(String json) {
-        BinaryTag compoundBinaryTag = fromJson(JsonParser.parseString(json));
+        String jsonString = normalizeJsonString(json);
+        BinaryTag compoundBinaryTag = fromJson(JsonParser.parseString(jsonString));
 
-        return new NbtMessage(json, compoundBinaryTag);
+        return new NbtMessage(jsonString, compoundBinaryTag);
+    }
+
+    private static String normalizeJsonString(String json) {
+        if (json == null) {
+            json = "";
+        }
+
+        String trimmed = json.trim();
+        if (trimmed.isEmpty()) {
+            return "{\"text\":\"\"}";
+        }
+
+        char first = trimmed.charAt(0);
+        if (first == '{' || first == '[' || first == '"') {
+            return json;
+        }
+
+        JsonObject wrapper = new JsonObject();
+        wrapper.addProperty("text", json);
+        return wrapper.toString();
     }
 
     public static BinaryTag fromJson(JsonElement json) {
